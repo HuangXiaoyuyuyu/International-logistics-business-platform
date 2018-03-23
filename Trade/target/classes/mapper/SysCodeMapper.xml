@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ <mapper namespace="ssm.dao.SysCodeDao">
+    <resultMap id="sysCodeRM" type="ssm.model.SysCode">
+        <id property="id" column="SYS_CODE_ID"></id>
+
+        <result property="orderNo" column="ORDER_NO"></result>
+        <result property="name" column="NAME"></result>
+    </resultMap>
+
+    <!--查询列表-->
+    <!--public List<SysCode> find(Map paraMap);-->
+    <select id="find" parameterType="map" resultMap="sysCodeRM">
+        select sys_code_id,order_no,name from sys_code_b
+        where 1=1
+        <if test="parent_id != null">and PARENT_ID = #{parent_id}</if>
+    </select>
+</mapper>

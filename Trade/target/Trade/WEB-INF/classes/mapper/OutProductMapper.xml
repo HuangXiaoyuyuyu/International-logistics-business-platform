@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ssm.dao.OutProductDao">
+    <!--映射合同和合同下的货物信息一对多-->
+    <resultMap id="outproductRM" type="ssm.vo.OutProductVO">
+        <result property="customName" column="CUSTOM_NAME" jdbcType="VARCHAR"></result>
+        <result property="contractNo" column="CONTRACT_NO" jdbcType="VARCHAR"></result>
+        <result property="productNo" column="PRODUCT_NO" jdbcType="VARCHAR"></result>
+        <result property="cnumber" column="CNUMBER" jdbcType="VARCHAR"></result>
+        <result property="factoryName" column="FACTORY_NAME" jdbcType="VARCHAR"></result>
+        <result property="exts" column="EXTS" jdbcType="VARCHAR"></result>
+        <result property="deliveryPeriod" column="DELIVERY_PERIOD" jdbcType="VARCHAR"></result>
+        <result property="shipTime" column="SHIP_TIME" jdbcType="VARCHAR"></result>
+        <result property="tradeTerms" column="TRADE_TERMS" jdbcType="VARCHAR"></result>
+    </resultMap>
+
+    <select id="find" parameterType="string" resultMap="outproductRM">
+        select
+        cp.custom_name,cp.contract_no,c.product_no,c.cnumber,c.factory_name,c.exts,
+        to_char(cp.delivery_period,'yyyy-MM-dd') as delivery_period,to_char(cp.ship_time,'yyyy-MM-dd') as ship_time,cp.trade_terms
+        from
+
+        (
+        select  contract_id,custom_name,contract_no,delivery_period,ship_time,trade_terms from contract_c
+        ) cp
+        left join
+        (
+        select contract_id,product_no,cnumber||packing_unit as cnumber,factory_name,exts from contract_product_c
+        ) c
+        on cp.contract_id=c.contract_id
+        where to_char( ship_time,'yyyy-MM') =#{inputDate}
+    </select>
+
+</mapper>

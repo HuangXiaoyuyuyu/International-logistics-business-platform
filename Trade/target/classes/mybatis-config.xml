@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!--
+        1.mybatis可以使用properties来引入外部properties配置文件的内容
+            resource:引入类路径下的资源
+            url:引入网络路径或磁盘路径下的资源
+    -->
+    <!--<properties resource="conf/dbconfig.properties"></properties>-->
+
+    <!--
+       2.settings包含很多重要的设置项
+          setting：用来设置每一个设置项
+            name:设置项名字
+            value:设置项取值
+    -->
+    <settings>
+        <!--开启自动驼峰命名规则-->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <!--一般在连接Oracle的时候传null值会报错需要设置-->
+        <setting name="jdbcTypeForNull" value="NULL" />
+
+        <!--显示的指定每个我们需要更改的配置的值，即使他是默认的，防止版本更新带来的问题-->
+        <setting name="cacheEnabled" value="true" />
+        <setting name="lazyLoadingEnabled" value="true" />
+        <setting name="aggressiveLazyLoading" value="false" />
+    </settings>
+
+    <!--
+        3.typeAliases:别名处理器，可以为我们的Java类型起别名
+            别名不区分大小写
+    -->
+    <!--<typeAliases>-->
+        <!--1.typeAlias：为某个java类型起别名
+                type:指定要起别名的类型全类名；默认别名就是类名首字母小写：employee
+                alias：制定新的别名
+        -->
+        <!--<typeAlias type="org.hxy.Employee" alias="emp"></typeAlias>-->
+
+        <!--2.package:为某个包下的所有类批量起别名
+                name:指定包名（为包及子包的所有类都起一个默认别名就是类名首字母小写）
+        -->
+        <!--<package name="org.hxy.mybatis.bean"></package>-->
+
+        <!--3.批量起别名的情况下，使用@Alias注解为某个类型指定新的别名-->
+
+    <!--</typeAliases>-->
+
+    <!--4.environments：环境们，mybatis可以配置多种环境，default指定使用某种环境，可以达到快速切换环境
+            environment：配置一个具体的环境信息,必须有如下两个标签；id代表当前环境的唯一标识
+                transactionManager：事务管理器
+                    type：事务管理器类型：
+                        JDBC：JdbcTransactionFactory
+                        MANAGED:ManagedTransactionFactory
+                       自定义事务管理器：实现TransactionFactory接口，type指定为全类名
+                dataSource：数据源
+                    type:
+                        UNPOOLED:UnpooledDataSourceFactory 不使用数据库连接池
+                        POOLED:PooledDataSourceFactory     使用数据库连接池
+                        JNDI:JndiDataSourceFactory
+                     自定义数据源：实现DataSourceFactory接口，type是全类名
+
+    -->
+    <!--<environments default="development">-->
+        <!--<environment id="development">-->
+            <!--<transactionManager type="JDBC"/>-->
+            <!--<dataSource type="POOLED">-->
+                <!--<property name="driver" value="${jdbc.driver}"/>-->
+                <!--<property name="url" value="${jdbc.url}"/>-->
+                <!--<property name="username" value="${jdbc.username}"/>-->
+                <!--<property name="password" value="${jdbc.password}"/>-->
+            <!--</dataSource>-->
+        <!--</environment>-->
+    <!--</environments>-->
+
+    <!--
+        5.databaseIdProvider:支持多数据库厂商的；
+            type="DB_VENDOR":VendorDatabaseIdProvider
+                作用就是得到数据库厂商的标识(驱动自带)，mybatis就能根据数据库厂商标识来执行不同的sql
+                    例如：MySQL，Oracle，SQL Server
+    -->
+    <!--<databaseIdProvider type="DB_VENDOR">-->
+        <!--<property name="MySQL" value="mysql"></property>-->
+        <!--<property name="Oracle" value="oracle"></property>-->
+        <!--<property name="SQL Server" value="sqlserver"></property>-->
+    <!--</databaseIdProvider>-->
+
+    <!--将写好的sql映射文件（EmployeeMapper.xml）一定要注册到全局配置文件中(mybatis-config.xml)中-->
+    <!--
+        6.mappers:将sql映射注册到全局配置中
+    -->
+    <!--<mappers>-->
+        <!--
+            mapper：注册一个sql映射
+                注册配置文件：
+                resource：引用类路径下的sql映射文件
+                    eg:conf/mybatis/mapper/EmployeeMapper.xml
+                url：引用网络路径或者此盘路径下的sql映射文件
+
+                注册接口：
+                class:直接引用(注册)接口
+                    1.有sql映射文件，映射文件名必须和接口同名，并且与接口同一目录下。
+                    2.没有sql映射文件，所有的sql都是利用注解写在接口上
+                    推荐：比较重要的Dao接口我们写sql映射文件
+                          不重要的，简单的Dao接口为了开发速度可以使用注解
+         -->
+        <!--<mapper resource="conf/mybatis/mapper/EmployeeMapper.xml"/>-->
+        <!--<mapper resource="conf/mybatis/mapper/EmployeeMapperPlus.xml" />-->
+        <!--<mapper resource="conf/mybatis/mapper/DepartmentMapper.xml" />-->
+        <!--<mapper resource="conf/mybatis/mapper/EmployeeMapperDynamicSQL.xml" />-->
+        <!--<mapper class="org.hxy.mybatis.dao.EmployeeMapperAnnotation" />-->
+        <!--批量注册-->
+        <!--<package name="org.hxy.mybatis.dao"></package>-->
+    <!--</mappers>-->
+</configuration>

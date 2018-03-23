@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ssm.dao.ContractDao">
+    <resultMap id="contractRM" type="ssm.model.Contract">
+        <!--主键-->
+        <id property="id" column="CONTRACT_ID"></id>
+        <!--一般属性-->
+
+        <result property="cpnum" column="CPNUM"></result>
+        <result property="extnum" column="EXTNUM"></result>
+
+        <result property="offeror" column="OFFEROR"></result>
+        <result property="contractNo" column="CONTRACT_NO"></result>
+        <result property="signingDate" column="SIGNING_DATE"></result>
+        <result property="inputBy" column="INPUT_BY"></result>
+        <result property="checkBy" column="CHECK_BY"></result>
+        <result property="inspector" column="INSPECTOR"></result>
+        <result property="totalAmount" column="TOTAL_AMOUNT"></result>
+        <result property="importNum" column="IMPORT_NUM"></result>
+        <result property="crequest" column="CREQUEST"></result>
+        <result property="customName" column="CUSTOM_NAME"></result>
+        <result property="deliveryPeriod" column="DELIVERY_PERIOD"></result>
+        <result property="shipTime" column="SHIP_TIME"></result>
+        <result property="tradeTerms" column="TRADE_TERMS"></result>
+        <result property="remark" column="REMARK"></result>
+        <result property="printStyle" column="PRINT_STYLE"></result>
+        <result property="oldState" column="OLD_STATE"></result>
+        <result property="state" column="STATE"></result>
+        <result property="outState" column="OUT_STATE"></result>
+
+        <result property="createBy" column="CREATE_BY"></result>
+        <result property="createDept" column="CREATE_DEPT"></result>
+        <result property="createTime" column="CREATE_TIME"></result>
+    </resultMap>
+
+    <resultMap id="contractVORM" type="ssm.vo.ContractVO" extends="contractRM">
+        <!--合同和货物（一对多）-->
+        <collection property="contractProducts" ofType="ssm.vo.ContractProductVO">
+            <id property="id" column="CONTRACT_PRODUCT_ID"></id>
+
+            <result property="productNo" column="PRODUCT_NO"></result>
+            <result property="productImage" column="PRODUCT_IMAGE"></result>
+            <result property="productDesc" column="PRODUCT_DESC"></result>
+            <result property="cnumber" column="CNUMBER"></result>
+            <result property="outCnumber" column="OUT_NUMBER"></result>
+            <result property="loadingRate" column="LOADING_RATE"></result>
+            <result property="boxNum" column="BOX_NUM"></result>
+            <result property="packingUnit" column="PACKING_UNIT"></result>
+            <result property="price" column="PRICE"></result>
+            <result property="amount" column="AMOUNT"></result>
+            <result property="finished" column="FINISHED"></result>
+            <result property="exts" column="EXTS"></result>
+            <result property="orderNo" column="ORDER_NO"></result>
+
+            <!--货物和生产厂家(多对一)-->
+            <association property="factory" javaType="ssm.model.Factory">
+                <!--主键-->
+                <id property="id" column="FACTORY_ID"></id>
+                <!--一般属性-->
+                <result property="fullName" column="FULL_NAME"></result>
+                <result property="factoryName" column="FACTORY_NAME"></result>
+                <result property="contacts" column="CONTACTS"></result>
+                <result property="phone" column="PHONE"></result>
+            </association>
+
+            <!--货物和附件(一对多)-->
+            <collection property="extCproducts" ofType="ssm.vo.ExtCproductVO">
+                <id property="id" column="EXT_CPRODUCT_ID"></id>
+
+                <result property="ctype" column="EXT_CTYPE"></result>
+                <result property="productNo" column="EXT_PRODUCT_NO"></result>
+                <result property="productImage" column="EXT_PRODUCT_IMAGE"></result>
+                <result property="productDesc" column="EXT_PRODUCT_DESC"></result>
+                <result property="cnumber" column="EXT_CNUMBER"></result>
+                <result property="packingUnit" column="EXT_PACKING_UNIT"></result>
+                <result property="price" column="EXT_PRICE"></result>
+                <result property="amount" column="EXT_AMOUNT"></result>
+                <result property="productRequest" column="EXT_PRODUCT_REQUEST"></result>
+                <result property="orderNo" column="EXT_ORDER_NO"></result>
+
+                <!--附件和生产厂家(多对一)-->
+                <association property="factory" javaType="ssm.model.Factory">
+                    <!--主键-->
+                    <id property="id" column="EXT_FACTORY_ID"></id>
+                    <!--一般属性-->
+                    <result property="fullName" column="EXT_FULL_NAME"></result>
+                    <result property="factoryName" column="EXT_FACTORY_NAME"></result>
+                    <result property="contacts" column="EXT_CONTACTS"></result>
+                    <result property="phone" column="EXT_PHONE"></result>
+                </association>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <!--查询-->
+    <!--public List<T> find(Map paraMap);-->
+    <select id="find" parameterType="map" resultMap="contractRM">
+        select
+          (select count(*) from contract_product_c
+            where contract_id=c.contract_id) as cpnum,
+          (select count(*) from ext_cproduct_c
+            where contract_product_id in
+              (select contract_product_id from contract_product_c where contract_id=c.contract_id)
+            ) as extnum,
+
+          (
+              (select sum(cnumber*price) as cptotal from contract_product_c
+                where contract_id = c.contract_id )
+              +
+              (select sum(cnumber*price) as exttotal from ext_cproduct_c
+                where contract_product_id in
+                  (select contract_product_id from contract_product_c where contract_id = c.contract_id)
+                )
+          ) as total_amount,
+          c.CONTRACT_ID, c.OFFEROR, c.CONTRACT_NO, c.SIGNING_DATE, c.INPUT_BY, c.CHECK_BY, c.INSPECTOR, c.IMPORT_NUM, c.CREQUEST, c.CUSTOM_NAME, c.DELIVERY_PERIOD, c.SHIP_TIME, c.TRADE_TERMS, c.REMARK, c.PRINT_STYLE, c.OLD_STATE, c.STATE, c.OUT_STATE
+          from contract_c c
+    </select>
+
+    <!--查询一条-->
+    <!--public T get(Serializable id);-->
+    <select id="get" parameterType="string" resultMap="contractRM">
+        select * from contract_c where contract_id = #{id}
+    </select>
+
+    <select id="view" parameterType="String" resultMap="contractVORM">
+         select
+            c.contract_id,c.offeror,c.contract_no,c.signing_date,c.input_by,c.check_by,c.inspector,c.total_amount,c.import_num,c.crequest,c.custom_name,c.delivery_period,c.ship_time,c.trade_terms,c.remark,c.print_style,c.old_state,c.state,c.out_state,c.create_by,c.create_dept,c.create_time,
+            t.contract_product_id,t.product_no,t.product_image,t.product_desc,t.cnumber,t.out_number,t.loading_rate,t.box_num,t.packing_unit,t.price,t.amount,t.finished,t.exts,t.order_no,
+            t.factory_id,t.full_name,t.factory_name,t.contacts,t.phone,t.ext_cproduct_id,
+            t.ctype,t.ext_product_no,t.ext_product_image,t.ext_product_desc,t.ext_cnumber,t.ext_packing_unit,t.ext_price,t.ext_amount,t.product_request,
+            t.ext_order_no,t.ext_factory_id,t.ext_full_name,t.ext_factory_name,t.ext_contacts,t.ext_phone
+        from
+            (
+                  select
+                      contract_id,offeror,contract_no,signing_date,input_by,check_by,inspector,total_amount,import_num,crequest,custom_name,delivery_period,ship_time,trade_terms,remark,print_style,old_state,state,out_state,create_by,create_dept,create_time
+                   from contract_c
+            ) c
+            left join
+            (
+                   select
+                          cp.contract_product_id,cp.contract_id,
+                          cp.product_no,cp.product_image,cp.product_desc,cp.cnumber,cp.out_number,cp.loading_rate,cp.box_num,cp.packing_unit,cp.price,cp.amount,cp.finished,cp.exts,cp.order_no,
+                          cp.factory_id,cp.full_name,cp.factory_name,cp.contacts,cp.phone,
+
+                          ext.ext_cproduct_id,
+                          ext.ctype,ext.product_no as ext_product_no,ext.product_image as ext_product_image,ext.product_desc as ext_product_desc,
+                          ext.cnumber as ext_cnumber,ext.packing_unit as ext_packing_unit,ext.price as ext_price,ext.amount as ext_amount,
+                          ext.product_request,ext.order_no as ext_order_no,
+                          ext.factory_id as ext_factory_id,ext.full_name as ext_full_name,ext.factory_name as ext_factory_name,ext.contacts as ext_contacts,ext.phone as ext_phone
+
+                    from
+                    (
+                        select
+                          cp.contract_product_id,cp.contract_id,
+                          cp.product_no,cp.product_image,cp.product_desc,cp.cnumber,cp.out_number,cp.loading_rate,cp.box_num,cp.packing_unit,cp.price,cp.amount,cp.finished,cp.exts,cp.order_no,
+                          f.factory_id,f.full_name,f.factory_name,f.contacts,f.phone
+                        from
+                        (select
+                        contract_product_id,contract_id,factory_id,
+                        product_no,product_image,product_desc,cnumber,out_number,loading_rate,box_num,packing_unit,price,amount,finished,exts,order_no
+                         from contract_product_c) cp
+                        left join
+                        (select factory_id,full_name,factory_name,contacts,phone from factory_c) f
+                        on cp.factory_id=f.factory_id
+                    ) cp
+                    left join
+                    (
+                        select
+                          ext.ext_cproduct_id,ext.contract_product_id,
+                          ext.ctype,ext.product_no,ext.product_image,ext.product_desc,ext.cnumber,ext.packing_unit,ext.price,ext.amount,ext.product_request,ext.order_no,
+                          f.factory_id,f.full_name,f.factory_name,f.contacts,f.phone
+                        from
+                        (
+                        select
+                            ext_cproduct_id,contract_product_id,factory_id,
+                            ctype,product_no,product_image,product_desc,cnumber,packing_unit,price,amount,product_request,order_no
+                         from ext_cproduct_c
+                        ) ext
+                        left join
+                        (select factory_id,full_name,factory_name,contacts,phone from factory_c) f
+                        on ext.factory_id=f.factory_id
+                    ) ext
+                    on cp.contract_product_id=ext.contract_product_id
+            ) t
+            on c.contract_id=t.contract_id
+            where c.contract_id=#{contract_id}
+    </select>
+
+    <!--新增-->
+    <!--public void insert(T entity);-->
+    <insert id="insert" parameterType="ssm.model.Contract">
+        insert into contract_c
+        (CONTRACT_ID,OFFEROR,CONTRACT_NO,SIGNING_DATE,INPUT_BY,CHECK_BY,INSPECTOR,TOTAL_AMOUNT,IMPORT_NUM,CREQUEST,CUSTOM_NAME,DELIVERY_PERIOD,SHIP_TIME,TRADE_TERMS,REMARK,PRINT_STYLE,OLD_STATE,STATE,OUT_STATE,CREATE_BY,CREATE_DEPT,CREATE_TIME)
+        values
+        (
+            #{id},
+            #{offeror,jdbcType=VARCHAR},
+            #{contractNo,jdbcType=VARCHAR},
+            #{signingDate,jdbcType=TIMESTAMP},
+            #{inputBy,jdbcType=VARCHAR},
+            #{checkBy,jdbcType=VARCHAR},
+            #{inspector,jdbcType=VARCHAR},
+            #{totalAmount,jdbcType=DOUBLE},
+            #{importNum,jdbcType=INTEGER},
+            #{crequest,jdbcType=VARCHAR},
+            #{customName,jdbcType=VARCHAR},
+            #{deliveryPeriod,jdbcType=TIMESTAMP},
+            #{shipTime,jdbcType=TIMESTAMP},
+            #{tradeTerms,jdbcType=VARCHAR},
+            #{remark,jdbcType=VARCHAR},
+            #{printStyle,jdbcType=VARCHAR},
+            #{oldState,jdbcType=INTEGER},
+            #{state,jdbcType=INTEGER},
+            #{outState,jdbcType=INTEGER},
+            #{createBy,jdbcType=VARCHAR},
+            #{createDept,jdbcType=VARCHAR},
+            #{createTime,jdbcType=TIMESTAMP}
+        )
+
+    </insert>
+
+    <!--修改-->
+    <!--public void update(T entity);-->
+    <update id="update" parameterType="ssm.model.Contract">
+        update contract_c
+        <set>
+            <if test="offeror != null">OFFEROR=#{offeror,jdbcType=VARCHAR},</if>
+            <if test="contractNo != null">CONTRACT_NO=#{contractNo,jdbcType=VARCHAR},</if>
+            <if test="signingDate != null">SIGNING_DATE=#{signingDate,jdbcType=TIMESTAMP},</if>
+            <if test="inputBy != null">INPUT_BY=#{inputBy,jdbcType=VARCHAR},</if>
+            <if test="checkBy != null">CHECK_BY=#{checkBy,jdbcType=VARCHAR},</if>
+            <if test="inspector != null">INSPECTOR=#{inspector,jdbcType=VARCHAR},</if>
+            <if test="totalAmount != null">TOTAL_AMOUNT=#{totalAmount,jdbcType=DOUBLE},</if>
+            <if test="importNum != null">IMPORT_NUM=#{importNum,jdbcType=INTEGER},</if>
+            <if test="crequest != null">CREQUEST=#{crequest,jdbcType=VARCHAR},</if>
+            <if test="customName != null">CUSTOM_NAME=#{customName,jdbcType=VARCHAR},</if>
+            <if test="deliveryPeriod != null">DELIVERY_PERIOD=#{deliveryPeriod,jdbcType=TIMESTAMP},</if>
+            <if test="shipTime != null">SHIP_TIME=#{shipTime,jdbcType=TIMESTAMP},</if>
+            <if test="tradeTerms != null">TRADE_TERMS=#{tradeTerms,jdbcType=VARCHAR},</if>
+            <if test="remark != null">REMARK=#{remark,jdbcType=VARCHAR},</if>
+            <if test="printStyle != null">PRINT_STYLE=#{printStyle,jdbcType=VARCHAR},</if>
+            <if test="oldState != null">OLD_STATE=#{oldState,jdbcType=INTEGER},</if>
+            <if test="state != null">STATE=#{state,jdbcType=INTEGER},</if>
+            <if test="outState != null">OUT_STATE=#{outState,jdbcType=INTEGER},</if>
+            <if test="createBy != null">CREATE_BY=#{createBy,jdbcType=VARCHAR},</if>
+            <if test="createDept != null">CREATE_DEPT=#{createDept,jdbcType=VARCHAR},</if>
+            <if test="createTime != null">CREATE_TIME=#{createTime,jdbcType=TIMESTAMP},</if>
+        </set>
+        where contract_id = #{id}
+    </update>
+
+    <!--删出-->
+    <!--public void deleteById(Serializable id);-->
+    <delete id="deleteById" parameterType="string">
+        delete from contract_c where contract_id = #{id}
+    </delete>
+
+    <!--删除N-->
+    <!--public void delete(Serializable[] ids);-->
+    <delete id="delete" parameterType="string">
+        delete from contract_c
+        where contract_id in
+        <foreach collection="array" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!--修改状态-->
+    <!--public void updateState(Map map);-->
+    <update id="updateState" parameterType="map">
+        update contract_c set state = #{state}
+        where contract_id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+</mapper>

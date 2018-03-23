@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ssm.dao.ExtCproductDao">
+    <resultMap id="extCproductRM" type="ssm.model.ExtCproduct">
+        <id property="id" column="EXT_CPRODUCT_ID"></id>
+
+        <result property="contractProductId" column="CONTRACT_PRODUCT_ID"></result>
+        <result property="factoryId" column="FACTORY_ID"></result>
+
+        <result property="factoryName" column="FACTORY_NAME"></result>
+        <result property="ctype" column="CTYPE"></result>
+        <result property="productNo" column="PRODUCT_NO"></result>
+        <result property="productImage" column="PRODUCT_IMAGE"></result>
+        <result property="productDesc" column="PRODUCT_DESC"></result>
+        <result property="cnumber" column="CNUMBER"></result>
+        <result property="packingUnit" column="PACKING_UNIT"></result>
+        <result property="price" column="PRICE"></result>
+        <result property="amount" column="AMOUNT"></result>
+        <result property="productRequest" column="PRODUCT_REQUEST"></result>
+        <result property="orderNo" column="ORDER_NO"></result>
+    </resultMap>
+
+    <!--查询某个货物下的附件信息-->
+    <!--public List<T> find(Map paraMap);-->
+    <select id="find" parameterType="map" resultMap="extCproductRM">
+        select * from ext_cproduct_c
+        where 1=1
+        <if test="contractProductId != null">and CONTRACT_PRODUCT_ID = #{contractProductId}</if>
+    </select>
+
+    <!--查询一个-->
+    <!--public T get(Serializable id);-->
+    <select id="get" parameterType="string" resultMap="extCproductRM">
+        select * from ext_cproduct_c
+        where ext_cproduct_id = #{id}
+    </select>
+
+    <!--新增-->
+    <!--public void insert(T entity);-->
+    <insert id="insert" parameterType="ssm.model.ExtCproduct">
+        insert into ext_cproduct_c
+        (EXT_CPRODUCT_ID,CONTRACT_PRODUCT_ID,FACTORY_ID,FACTORY_NAME,
+        CTYPE,PRODUCT_NO,PRODUCT_IMAGE,PRODUCT_DESC,CNUMBER,
+        PACKING_UNIT,PRICE,AMOUNT,PRODUCT_REQUEST,ORDER_NO)
+        values
+        (
+        #{id},
+        #{contractProductId,jdbcType=VARCHAR},
+        #{factoryId,jdbcType=VARCHAR},
+        #{factoryName,jdbcType=VARCHAR},
+        #{ctype,jdbcType=INTEGER},
+        #{productNo,jdbcType=VARCHAR},
+        #{productImage,jdbcType=VARCHAR},
+        #{productDesc,jdbcType=VARCHAR},
+        #{cnumber,jdbcType=INTEGER},
+        #{packingUnit,jdbcType=VARCHAR},
+        #{price,jdbcType=DOUBLE},
+        #{amount,jdbcType=DOUBLE},
+        #{productRequest,jdbcType=VARCHAR},
+        #{orderNo,jdbcType=INTEGER}
+        )
+    </insert>
+
+    <!--更新-->
+    <!--public void update(T entity);-->
+    <update id="update" parameterType="ssm.model.ExtCproduct">
+        update ext_cproduct_c
+        <set>
+            <if test="contractProductId != null">CONTRACT_PRODUCT_ID=#{contractProductId,jdbcType=VARCHAR},</if>
+            <if test="factoryId != null">FACTORY_ID=#{factoryId,jdbcType=VARCHAR},</if>
+            <if test="factoryName != null">FACTORY_NAME=#{factoryName,jdbcType=VARCHAR},</if>
+            <if test="ctype != null">CTYPE=#{ctype,jdbcType=INTEGER},</if>
+            <if test="productNo != null">PRODUCT_NO=#{productNo,jdbcType=VARCHAR},</if>
+            <if test="productImage != null">PRODUCT_IMAGE=#{productImage,jdbcType=VARCHAR},</if>
+            <if test="productDesc != null">PRODUCT_DESC=#{productDesc,jdbcType=VARCHAR},</if>
+            <if test="cnumber != null">CNUMBER=#{cnumber,jdbcType=INTEGER},</if>
+            <if test="packingUnit != null">PACKING_UNIT=#{packingUnit,jdbcType=VARCHAR},</if>
+            <if test="price != null">PRICE=#{price,jdbcType=DOUBLE},</if>
+            <if test="amount != null">AMOUNT=#{amount,jdbcType=DOUBLE},</if>
+            <if test="productRequest != null">PRODUCT_REQUEST=#{productRequest,jdbcType=VARCHAR},</if>
+            <if test="orderNo != null">ORDER_NO=#{orderNo,jdbcType=INTEGER}</if>
+        </set>
+        where ext_cproduct_id = #{id}
+    </update>
+
+    <!--删除-->
+    <!--public void deleteById(Serializable id);-->
+    <delete id="deleteById" parameterType="string">
+        delete from ext_cproduct_c
+        where ext_cproduct_id = #{id}
+    </delete>
+
+    <!--删除N-->
+    <!--public void delete(Serializable[] ids);-->
+    <delete id="delete" parameterType="string">
+        delete from ext_cproduct_c
+        where ext_cproduct_id in
+        <foreach collection="array" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!--级联删除,删除某个货物下的附件-->
+    <delete id="deleteByContractProductById" parameterType="string">
+        delete from ext_cproduct_c
+        where contract_product_id in
+        <foreach collection="array" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!--级联删除，删除某个合同下的附件-->
+    <delete id="deleteByContractId" parameterType="string">
+        delete from ext_cproduct_c
+        where contract_product_id in
+        (
+            select contract_product_id from contract_product_c
+            where contract_id in
+            <foreach collection="array" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        )
+
+    </delete>
+</mapper>
